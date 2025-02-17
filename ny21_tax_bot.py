@@ -6,7 +6,12 @@ def fetch_irs_data():
     data = [
         {"County": "Clinton", "Income Tax Paid": 50000000},
         {"County": "Essex", "Income Tax Paid": 30000000},
-        {"County": "Franklin", "Income Tax Paid": 20000000}
+        {"County": "Franklin", "Income Tax Paid": 20000000},
+        {"County": "Jefferson", "Income Tax Paid": 25000000},
+        {"County": "Lewis", "Income Tax Paid": 15000000},
+        {"County": "St. Lawrence", "Income Tax Paid": 20000000},
+        {"County": "Warren", "Income Tax Paid": 30000000},
+        {"County": "Washington", "Income Tax Paid": 18000000}
     ]
     return pd.DataFrame(data)
 
@@ -17,7 +22,7 @@ def fetch_usaspending_data():
         'User-Agent': 'streamlit-app'
     }
     payload = {
-        "scope": "recipient_location",  # Added required scope
+        "scope": "recipient_location", 
         "geo_layer": "county",
         "filters": {
             "recipient_locations": [{"country": "USA", "state": "NY"}],
@@ -27,10 +32,12 @@ def fetch_usaspending_data():
     try:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
-        st.write("### API Response:")
-        st.json(response.json())
         results = response.json().get("results", [])
-        data = [{"County": item.get("name"), "Federal Funding": item.get("amount", 0)} for item in results]
+        ny21_counties = ["Clinton County", "Essex County", "Franklin County", "Jefferson County", "Lewis County", "St. Lawrence County", "Warren County", "Washington County"]
+        data = [
+            {"County": item.get("display_name"), "Federal Funding": item.get("aggregated_amount", 0)} 
+            for item in results if item.get("display_name") in ny21_counties
+        ]
         return pd.DataFrame(data)
     except requests.exceptions.RequestException as e:
         st.error(f"Failed to fetch data from USAspending.gov: {e}\nResponse Text: {getattr(e.response, 'text', 'No response text')}.")
@@ -56,7 +63,7 @@ def main():
 
             st.write(f'## Total Return per $1 of Federal Tax Paid in NY-21: ${return_ratio:.2f}')
         else:
-            st.write("No data available for the selected district.")
+            st.write("No data available for NY-21 counties.")
 
 if __name__ == '__main__':
     main()
