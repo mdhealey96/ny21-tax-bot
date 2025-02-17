@@ -17,6 +17,7 @@ def fetch_usaspending_data():
         'User-Agent': 'streamlit-app'
     }
     payload = {
+        "scope": "recipient_location",  # Added required scope
         "geo_layer": "county",
         "filters": {
             "recipient_locations": [{"country": "USA", "state": "NY"}],
