@@ -4,14 +4,14 @@ import requests
 
 def fetch_irs_data():
     data = [
-        {"County": "Clinton", "Income Tax Paid": 50000000},
-        {"County": "Essex", "Income Tax Paid": 30000000},
-        {"County": "Franklin", "Income Tax Paid": 20000000},
-        {"County": "Jefferson", "Income Tax Paid": 25000000},
-        {"County": "Lewis", "Income Tax Paid": 15000000},
-        {"County": "St. Lawrence", "Income Tax Paid": 20000000},
-        {"County": "Warren", "Income Tax Paid": 30000000},
-        {"County": "Washington", "Income Tax Paid": 18000000}
+        {"County": "Clinton County", "Income Tax Paid": 50000000},
+        {"County": "Essex County", "Income Tax Paid": 30000000},
+        {"County": "Franklin County", "Income Tax Paid": 20000000},
+        {"County": "Jefferson County", "Income Tax Paid": 25000000},
+        {"County": "Lewis County", "Income Tax Paid": 15000000},
+        {"County": "St. Lawrence County", "Income Tax Paid": 20000000},
+        {"County": "Warren County", "Income Tax Paid": 30000000},
+        {"County": "Washington County", "Income Tax Paid": 18000000}
     ]
     return pd.DataFrame(data)
 
@@ -33,10 +33,13 @@ def fetch_usaspending_data():
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
         results = response.json().get("results", [])
-        ny21_counties = ["Clinton County", "Essex County", "Franklin County", "Jefferson County", "Lewis County", "St. Lawrence County", "Warren County", "Washington County"]
+        st.write("### API Counties Returned:")
+        st.write([item.get("display_name") for item in results])
+
+        ny21_counties = ["clinton county", "essex county", "franklin county", "jefferson county", "lewis county", "st. lawrence county", "warren county", "washington county"]
         data = [
             {"County": item.get("display_name"), "Federal Funding": item.get("aggregated_amount", 0)} 
-            for item in results if item.get("display_name") in ny21_counties
+            for item in results if item.get("display_name").lower() in ny21_counties
         ]
         return pd.DataFrame(data)
     except requests.exceptions.RequestException as e:
