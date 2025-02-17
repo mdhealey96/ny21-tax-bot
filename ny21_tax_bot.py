@@ -1,4 +1,4 @@
-import streamlit as st
+ import streamlit as st
 import pandas as pd
 import requests
 
@@ -17,7 +17,7 @@ def fetch_usaspending_data():
         'User-Agent': 'streamlit-app'
     }
     payload = {
-        "scope": "county",
+        "scope": "recipient_location",  # Corrected field
         "geo_layer": "county",
         "filters": {
             "recipient_locations": [{"country": "USA", "state": "NY"}],
