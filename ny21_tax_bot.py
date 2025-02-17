@@ -16,20 +16,22 @@ def fetch_usaspending_data():
         'Content-Type': 'application/json',
         'User-Agent': 'streamlit-app'
     }
-    params = {
+    payload = {
         "scope": "county",
         "geo_layer": "county",
-        "filters": {"place": "NY"},
-        "fy": "2023"
+        "filters": {
+            "recipient_locations": [{"country": "USA", "state": "NY"}],
+            "time_period": [{"start_date": "2023-01-01", "end_date": "2023-12-31"}]
+        }
     }
     try:
-        response = requests.post(url, headers=headers, json=params)
+        response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
-        results = response.json()["results"]
-        data = [{"County": item["name"], "Federal Funding": item["amount"]} for item in results]
+        results = response.json().get("results", [])
+        data = [{"County": item.get("name"), "Federal Funding": item.get("amount", 0)} for item in results]
         return pd.DataFrame(data)
     except requests.exceptions.RequestException as e:
-        st.error(f"Failed to fetch data from USAspending.gov: {e}")
+        st.error(f"Failed to fetch data from USAspending.gov: {e}\nResponse Text: {getattr(e.response, 'text', 'No response text')}.")
         return pd.DataFrame()
 
 def main():
@@ -56,3 +58,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
