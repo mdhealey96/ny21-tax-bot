@@ -1,7 +1,8 @@
- import streamlit as st
+import streamlit as st
 import pandas as pd
 import requests
 
+# Fixed indentation by ensuring no extra spaces at the beginning of the code
 def fetch_irs_data():
     data = [
         {"County": "Clinton", "Income Tax Paid": 50000000},
