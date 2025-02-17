@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import requests
 
-# Fixed indentation by ensuring no extra spaces at the beginning of the code
 def fetch_irs_data():
     data = [
         {"County": "Clinton", "Income Tax Paid": 50000000},
@@ -18,7 +17,6 @@ def fetch_usaspending_data():
         'User-Agent': 'streamlit-app'
     }
     payload = {
-        "scope": "recipient_location",  # Corrected field
         "geo_layer": "county",
         "filters": {
             "recipient_locations": [{"country": "USA", "state": "NY"}],
@@ -28,6 +26,8 @@ def fetch_usaspending_data():
     try:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
+        st.write("### API Response:")
+        st.json(response.json())
         results = response.json().get("results", [])
         data = [{"County": item.get("name"), "Federal Funding": item.get("amount", 0)} for item in results]
         return pd.DataFrame(data)
@@ -51,7 +51,7 @@ def main():
 
             total_tax = merged_data['Income Tax Paid'].sum()
             total_funding = merged_data['Federal Funding'].sum()
-            return_ratio = total_funding / total_tax
+            return_ratio = total_funding / total_tax if total_tax > 0 else 0
 
             st.write(f'## Total Return per $1 of Federal Tax Paid in NY-21: ${return_ratio:.2f}')
         else:
