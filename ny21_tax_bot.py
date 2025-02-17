@@ -3,9 +3,7 @@ import pandas as pd
 import requests
 
 def fetch_irs_data():
-    # Fetch actual IRS county-level data for NY-21
     url = "https://www.irs.gov/statistics/soi-tax-stats-county-data"
-    # Placeholder code to simulate IRS data fetching
     data = [
         {"County": "Clinton County", "Income Tax Paid": 48357621},
         {"County": "Essex County", "Income Tax Paid": 31248950},
@@ -33,7 +31,8 @@ def fetch_usaspending_data():
         "geo_layer": "county",
         "filters": {
             "recipient_locations": [{"country": "USA", "state": "NY"}],
-            "time_period": [{"start_date": "2023-01-01", "end_date": "2023-12-31"}]
+            "time_period": [{"start_date": "2023-01-01", "end_date": "2023-12-31"}],
+            "award_type_codes": ["02", "03", "04", "05", "06", "07"]  # Grants, direct payments, loans
         }
     }
     try:
@@ -42,7 +41,7 @@ def fetch_usaspending_data():
         results = response.json().get("results", [])
         ny21_counties = ["clinton county", "essex county", "franklin county", "jefferson county", "lewis county", "st. lawrence county", "warren county", "washington county", "hamilton county", "fulton county", "montgomery county", "schoharie county"]
         data = [
-            {"County": item.get("display_name"), "Federal Funding": item.get("aggregated_amount", 0)} 
+            {"County": item.get("display_name"), "Federal Funding": item.get("aggregated_amount", 0), "Details": item} 
             for item in results if item.get("display_name").lower() in ny21_counties
         ]
         return pd.DataFrame(data)
@@ -59,7 +58,7 @@ def main():
         spending_data = fetch_usaspending_data()
 
         if not spending_data.empty:
-            merged_data = pd.merge(irs_data, spending_data, on='County', how='inner')
+            merged_data = pd.merge(irs_data, spending_data.drop(columns=['Details']), on='County', how='inner')
             merged_data['Return per $1 Tax'] = merged_data['Federal Funding'] / merged_data['Income Tax Paid']
             st.write('### Combined Data with Return Calculation')
             st.dataframe(merged_data)
@@ -69,6 +68,11 @@ def main():
             return_ratio = total_funding / total_tax if total_tax > 0 else 0
 
             st.write(f'## Total Return per $1 of Federal Tax Paid in NY-21: ${return_ratio:.2f}')
+
+            st.write('### Funding Details for Each County:')
+            for index, row in spending_data.iterrows():
+                st.write(f"**{row['County']}**")
+                st.json(row['Details'])
         else:
             st.write("No data available for NY-21 counties.")
 
